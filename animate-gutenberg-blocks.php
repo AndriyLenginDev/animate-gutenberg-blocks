@@ -13,14 +13,17 @@
  * @package           create-block
  */
 
-/**
- * Registers the block using the metadata loaded from the `block.json` file.
- * Behind the scenes, it registers also all assets so they can be enqueued
- * through the block editor in the corresponding context.
- *
- * @see https://developer.wordpress.org/reference/functions/register_block_type/
- */
-function create_block_animate_gutenberg_blocks_block_init() {
-	register_block_type( __DIR__ . '/build' );
+if (!defined('ABSPATH')) {
+	exit;
 }
-add_action( 'init', 'create_block_animate_gutenberg_blocks_block_init' );
+
+add_action('enqueue_block_editor_assets', 'extend_block_attributes');
+
+function extend_block_attributes()
+{
+	wp_enqueue_script(
+		'animate-gutenberg-blocks',
+		esc_url(plugins_url('build/index.js', __FILE__)),
+		['wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor']
+	);
+}
