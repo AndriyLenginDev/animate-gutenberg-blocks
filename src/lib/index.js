@@ -1,4 +1,4 @@
-// Available options
+import classnames from 'classnames';
 
 export const ANIMATION_TYPES = [
   'bounce',
@@ -100,21 +100,36 @@ export const ANIMATION_TYPES = [
   'slideOutUp'
 ];
 
-export const spacingControlOptions = [
+export const generateAnimationProps = (
+  className = '',
   {
-    label: __('None'),
-    value: ''
-  },
-  {
-    label: __('Small'),
-    value: 'small'
-  },
-  {
-    label: __('Medium'),
-    value: 'medium'
-  },
-  {
-    label: __('Large'),
-    value: 'large'
+    animation, // Keep this expanded
+    duration = 1000,
+    delay = 0,
+    repeat = 1,
+    infinite = false
   }
-];
+) => {
+  const classes = [className, 'animate__animated'];
+  const style = {
+    '--animate-duration': `${duration}ms`
+  };
+  if (animation) {
+    classes.push(`animate__${animation}`);
+  }
+  if (delay > 0) {
+    classes.push('animate__delay-1s');
+    style['--animate-delay'] = `${delay / 1000}s`;
+  }
+  if (infinite) {
+    classes.push('animate__infinite infinite');
+  } else if (repeat > 1) {
+    classes.push('animate__repeat-1');
+    style['--animate-repeat'] = repeat;
+  }
+
+  return {
+    className: classnames(classes),
+    style
+  };
+};
