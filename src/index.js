@@ -83,7 +83,10 @@ const withAnimationControls = createHigherOrderComponent((BlockEdit) => {
 
     const onAnimationTypeSelect = (animation) => {
       if (animation) {
-        const { className } = generateAnimationProps(attributes.className, attributes);
+        const { className } = generateAnimationProps(attributes.className, {
+          ...attributes,
+          animation
+        });
 
         setAttributes({
           animation,
