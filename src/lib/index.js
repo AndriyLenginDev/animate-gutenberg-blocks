@@ -1,4 +1,12 @@
-import classnames from 'classnames';
+import classnames from 'classnames/dedupe';
+
+export const DEFAULT_VALUES = {
+	animation: '',
+	duration: 1000,
+	delay: 0,
+	repeat: 1,
+	infinite: false
+};
 
 export const ANIMATION_TYPES = [
   'bounce',
@@ -110,7 +118,7 @@ export const generateAnimationProps = (
     infinite = false
   }
 ) => {
-  const classes = [className, 'animate__animated'];
+  const classes = [...className.split(' '), 'animate__animated'];
   const style = {
     '--animate-duration': `${duration}ms`
   };
@@ -125,11 +133,13 @@ export const generateAnimationProps = (
     classes.push('animate__infinite infinite');
   } else if (repeat > 1) {
     classes.push('animate__repeat-1');
-    style['--animate-repeat'] = repeat;
+    style['--animate-repeat'] = String(repeat);
   }
 
   return {
-    className: classnames(classes),
+    className: classnames(...classes),
     style
   };
 };
+
+export const capitalize = s => s && s[0].toUpperCase() + s.slice(1);

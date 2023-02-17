@@ -1,18 +1,18 @@
 import assign from 'lodash.assign';
 import 'animate.css/animate.min.css';
-import {ANIMATION_TYPES, generateAnimationProps} from './lib';
+import './editor.scss';
+
+import { ANIMATION_TYPES, capitalize, DEFAULT_VALUES, generateAnimationProps } from './lib';
 
 const { createHigherOrderComponent } = wp.compose;
-const { Fragment } = wp.element;
+const { Fragment, useMemo } = wp.element;
 const { addFilter } = wp.hooks;
 const { InspectorControls } = wp.blockEditor;
 const {
-  __experimentalDivider: Divider,
   __experimentalGrid: Grid,
-  __experimentalHeading: Heading,
   __experimentalNumberControl: NumberControl,
-  __experimentalText: Text,
   ComboboxControl,
+  ToggleControl,
   PanelBody
 } = wp.components;
 
@@ -31,23 +31,23 @@ const addAnimationAttributeControl = (settings, name) => {
   settings.attributes = assign(settings.attributes, {
     animation: {
       type: 'string',
-      default: ''
+      default: DEFAULT_VALUES.animation
     },
     duration: {
       type: 'number',
-      default: 1000
+      default: DEFAULT_VALUES.duration
     },
     delay: {
       type: 'number',
-      default: 0
+      default: DEFAULT_VALUES.delay
     },
     repeat: {
       type: 'number',
-      default: 1
+      default: DEFAULT_VALUES.repeat
     },
     infinite: {
       type: 'boolean',
-      default: false
+      default: DEFAULT_VALUES.infinite
     }
   });
 
@@ -60,153 +60,104 @@ addFilter(
   addAnimationAttributeControl
 );
 
-// const withAnimationControls = createHigherOrderComponent((BlockEdit) => {
-//   return (props) => {
-//     const { name, attributes, setAttributes } = props;
-//
-//     if (!ENABLE_ON_BLOCKS.includes(name)) {
-//       return <BlockEdit {...props} />;
-//     }
-//
-//     attributes.className = 'animate__animated animate__bounce';
-//
-//     const { animationInDelay, animationInDuration } = attributes;
-//
-//     const onAnimationTypeSelect = (value) => {
-//       console.log('onAnimationTypeSelect', value);
-//     };
-//
-//     const onDelayChange = (animationInDelay) => {
-//       setAttributes({ animationInDelay });
-//     };
-//
-//     const onDurationChange = (animationInDuration) => {
-//       setAttributes({ animationInDuration });
-//     };
-//
-//     return (
-//       <Fragment>
-//         <BlockEdit {...props} />
-//         <InspectorControls>
-//           <PanelBody title={'Animation'}>
-//             <ComboboxControl
-//             	label={'AnimationIn type'}
-//             	value={'one'}
-//             	options={[
-//             		{
-//             			label: 'None',
-//             			value: ''
-//             		},
-//             		{
-//             			label: 'One',
-//             			value: 'one'
-//             		}
-//             	]}
-//             	onChange={onAnimationTypeSelect}
-//             />
-//             <Divider />
-//             <Heading>Code is Poetry</Heading>
-//             <Text>Text can be used to render any text-content, like an HTML p or span.</Text>
-//             <Grid
-//             	columns={1}
-//             	rows={2}>
-//             	<NumberControl
-//             		label={'Animation In Delay'}
-//             		labelPosition={'side'}
-//             		onChange={onDelayChange}
-//             		step={100}
-//             		value={animationInDelay}
-//             		spinControls={'custom'}
-//             	/>
-//             	<NumberControl
-//             		label={'Animation In Duration'}
-//             		labelPosition={'side'}
-//             		onChange={onDurationChange}
-//             		step={100}
-//             		value={animationInDuration}
-//             		spinControls={'custom'}
-//             	/>
-//             </Grid>
-//           </PanelBody>
-//         </InspectorControls>
-//       </Fragment>
-//     );
-//   };
-// }, 'withAnimation');
-
 const withAnimationControls = createHigherOrderComponent((BlockEdit) => {
-	return (props) => {
-		const { name, attributes, setAttributes } = props;
+  return (props) => {
+    const { name, attributes, setAttributes } = props;
 
-		if (!ENABLE_ON_BLOCKS.includes(name)) {
-			return <BlockEdit {...props} />;
-		}
-		// attributes.className = 'animate__animated animate__bounce';
+    if (!ENABLE_ON_BLOCKS.includes(name)) {
+      return <BlockEdit {...props} />;
+    }
 
-		const { animation, duration, delay } = attributes;
+    const animationTypeOptions = useMemo(() => {
+      return [
+        {
+          label: 'None',
+          value: ''
+        },
+        ...ANIMATION_TYPES.map((type) => ({
+          label: capitalize(type),
+          value: type
+        }))
+      ];
+    }, [ANIMATION_TYPES, capitalize]);
 
-		const onAnimationTypeSelect = (animation) => {
-			console.log('onAnimationTypeSelect', animation);
+    const onAnimationTypeSelect = (animation) => {
+      if (animation) {
+        const { className } = generateAnimationProps(attributes.className, attributes);
 
-			setAttributes({ animation });
-		};
+        setAttributes({
+          animation,
+          className
+        });
+      } else {
+        setAttributes({ ...DEFAULT_VALUES });
+      }
+    };
 
-		const onDurationChange = (duration) => {
-			setAttributes({ duration });
-		};
+    const onDurationChange = (duration) => {
+      setAttributes({ duration });
+    };
 
-		const onDelayChange = (delay) => {
-			setAttributes({ delay });
-		};
+    const onDelayChange = (delay) => {
+      setAttributes({ delay });
+    };
 
-		return (
-			<Fragment>
-				<BlockEdit {...props} />
-				<InspectorControls>
-					<PanelBody title={'Animation'}>
-						<ComboboxControl
-							label={'AnimationIn type'}
-							value={animation}
-							options={[
-								{
-									label: 'None',
-									value: ''
-								},
-								...ANIMATION_TYPES.map((type) => ({
-									label: type,
-									value: type
-								}))
-							]}
-							onChange={onAnimationTypeSelect}
-						/>
-						{/*<Divider />*/}
-						{/*<Heading>Code is Poetry</Heading>*/}
-						{/*<Text>Text can be used to render any text-content, like an HTML p or span.</Text>*/}
-						<Grid
-							columns={1}
-							rows={2}>
-							<NumberControl
-								label={'Duration, ms'}
-								labelPosition={'side'}
-								onChange={onDurationChange}
-								step={100}
-								value={duration}
-								spinControls={'custom'}
-							/>
-							<NumberControl
-								label={'Delay, ms'}
-								labelPosition={'side'}
-								onChange={onDelayChange}
-								step={100}
-								value={delay}
-								spinControls={'custom'}
-							/>
-						</Grid>
-					</PanelBody>
-				</InspectorControls>
-			</Fragment>
-		);
-	};
+    const onRepeatChange = (repeat) => {
+      setAttributes({ repeat });
+    };
+
+    const onInfiniteChange = (infinite) => {
+      setAttributes({ infinite });
+    };
+
+    return (
+      <Fragment>
+        <BlockEdit {...props} />
+        <InspectorControls>
+          <PanelBody title={'Animation'}>
+            <ComboboxControl
+              value={attributes.animation}
+              options={animationTypeOptions}
+              onChange={onAnimationTypeSelect}
+            />
+            {attributes.animation && (
+              <>
+                <Grid
+                  columns={2}
+                  rows={2}
+                  className="animation__properties">
+                  <NumberControl
+                    label={'Duration, ms'}
+                    step={100}
+                    value={attributes.duration}
+                    onChange={onDurationChange}
+                  />
+                  <NumberControl
+                    label={'Delay, ms'}
+                    step={100}
+                    value={attributes.delay}
+                    onChange={onDelayChange}
+                  />
+                  <NumberControl
+                    label={'Repeat'}
+                    step={1}
+                    disabled={attributes.infinite}
+                    value={attributes.repeat}
+                    onChange={onRepeatChange}
+                  />
+                  <ToggleControl
+                    label={'Infinite'}
+                    checked={attributes.infinite}
+                    onChange={onInfiniteChange}
+                  />
+                </Grid>
+              </>
+            )}
+          </PanelBody>
+        </InspectorControls>
+      </Fragment>
+    );
+  };
 }, 'withAnimation');
 
 addFilter(
@@ -226,9 +177,7 @@ const addExtraClass = (extraProps, blockType, attributes) => {
 
   const animationProps = generateAnimationProps(extraProps.className, attributes);
 
-	console.log({ name: blockType?.name, extraProps, attributes, animationProps });
-
-	extraProps = assign(extraProps, animationProps);
+  extraProps = assign(extraProps, animationProps);
 
   return extraProps;
 };
