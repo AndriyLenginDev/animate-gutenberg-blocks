@@ -112,10 +112,10 @@ export const generateAnimationProps = (
   className = '',
   {
     animation, // Keep this expanded
-    duration = 1000,
-    delay = 0,
-    repeat = 1,
-    infinite = false
+    duration = DEFAULT_VALUES.duration,
+    delay = DEFAULT_VALUES.delay,
+    repeat = DEFAULT_VALUES.repeat,
+    infinite = DEFAULT_VALUES.infinite
   }
 ) => {
   const classes = [...className.split(' '), 'animate__animated'];
